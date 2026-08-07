@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+venv/
+release_notes_log.md
