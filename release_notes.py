@@ -19,7 +19,12 @@ DISCLAIMER = (
 )
 
 load_dotenv()
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise SystemExit(
+        "Missing GEMINI_API_KEY. Add it to a .env file in this directory "
+        "(see README.md for setup instructions)."
+    )
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
