@@ -2,8 +2,7 @@
 
 A command-line tool that turns raw implementation tickets and commit
 messages into clean, customer-readable release notes, grouped into
-categories using the Gemini API. Built as an answer to a Bosch internship
-task about automating release notes with AI.
+categories using the Gemini API.
 
 Any entry too vague to describe safely is flagged for human review instead
 of being guessed at, and every output ends with a reminder that a human
