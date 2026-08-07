@@ -8,9 +8,33 @@ Any entry too vague to describe safely is flagged for human review instead
 of being guessed at, and every output ends with a reminder that a human
 must review and approve it before publishing.
 
+## Highlights
+
+A few design decisions worth noticing if you're skimming:
+
+- **Never invents descriptions.** Entries too vague to summarize safely
+  (e.g. "fix stuff") are quoted verbatim under a "Needs Human Review"
+  heading instead of being guessed at — see `build_prompt()` in
+  [`release_notes.py`](release_notes.py).
+- **Secrets never touch the image or the repo.** The API key is read
+  from `.env` at runtime only; it's excluded from git via `.gitignore`
+  and never copied into the Docker image (see the [Dockerfile](Dockerfile)).
+- **Pasted text is treated as data, not instructions.** Raw input is
+  wrapped in `<raw_notes>` delimiters with an explicit instruction not
+  to follow anything inside it, as a guard against prompt injection —
+  see "Known limitations" below.
+- **The human-approval step is structural, not just a comment** — every
+  output ends with an explicit approval reminder the code appends
+  itself, and the [workflow diagram](#workflow) below shows where it
+  sits in the process.
+- **Covered by tests that don't need a real API key** — see
+  [`test_release_notes.py`](test_release_notes.py) and "Running tests"
+  below.
+
 ## Setup
 
-1. Create a `.env` file in the project root with your Gemini API key:
+1. Create a `.env` file in the project root with your Gemini API key
+   (copy `.env.example` and fill in your key):
 
    ```
    GEMINI_API_KEY=your-key-here
@@ -75,6 +99,15 @@ human before publishing.
 
 Type `quit` at any point instead of pasting to exit the program.
 
+## Running tests
+
+```
+python -m unittest test_release_notes.py -v
+```
+
+These cover prompt building and log writing. They don't call the
+Gemini API, so no API key or network access is needed to run them.
+
 ## Logging
 
 Every generated batch is appended to `release_notes_log.md` in this
@@ -94,6 +127,16 @@ flowchart LR
     D -->|Approved| E[Published to customers]
     D -->|Needs changes| A
 ```
+
+## Known limitations
+
+Pasted text is sent to the model wrapped in delimiters with an
+instruction to treat it as data, not commands, as a guard against
+prompt injection (e.g. a pasted line trying to say "ignore the rules
+above"). This reduces but doesn't eliminate the risk — as with any tool
+that feeds unreviewed text into a prompt, output should be read before
+it's trusted, which is exactly what the mandatory human-review step is
+for.
 
 ## Future work
 
